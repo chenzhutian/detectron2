@@ -9,8 +9,9 @@ import torch
 from iopath.common.file_io import LazyPath
 
 from detectron2 import model_zoo
-from detectron2.config import instantiate
+from detectron2.config import get_cfg, instantiate
 from detectron2.data import (
+    DatasetCatalog,
     DatasetFromList,
     MapDataset,
     ToIterableDataset,
@@ -18,6 +19,7 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
+from detectron2.data.common import AspectRatioGroupedDataset
 from detectron2.data.samplers import InferenceSampler, TrainingSampler
 
 
@@ -73,7 +75,23 @@ class TestMapDataset(unittest.TestCase):
         self.assertEqual(ds[0], 2)
 
 
-@unittest.skipIf(os.environ.get("CI"), "Skipped OSS testing due to COCO data requirement.")
+class TestAspectRatioGrouping(unittest.TestCase):
+    def test_reiter_leak(self):
+        data = [(1, 0), (0, 1), (1, 0), (0, 1)]
+        data = [{"width": a, "height": b} for (a, b) in data]
+        batchsize = 2
+        dataset = AspectRatioGroupedDataset(data, batchsize)
+
+        for _ in range(5):
+            for idx, __ in enumerate(dataset):
+                if idx == 1:
+                    # manually break, so the iterator does not stop by itself
+                    break
+            # check that bucket sizes are valid
+            for bucket in dataset._buckets:
+                self.assertLess(len(bucket), batchsize)
+
+
 class TestDataLoader(unittest.TestCase):
     def _get_kwargs(self):
         # get kwargs of build_detection_train_loader
@@ -95,6 +113,22 @@ class TestDataLoader(unittest.TestCase):
         dl = build_detection_train_loader(dataset=ds, **kwargs)
         next(iter(dl))
 
+    def test_build_iterable_dataloader_from_cfg(self):
+        cfg = get_cfg()
+
+        class MyData(torch.utils.data.IterableDataset):
+            def __iter__(self):
+                while True:
+                    yield 1
+
+        cfg.DATASETS.TRAIN = ["iter_data"]
+        DatasetCatalog.register("iter_data", lambda: MyData())
+        dl = build_detection_train_loader(cfg, mapper=lambda x: x, aspect_ratio_grouping=False)
+        next(iter(dl))
+
+        dl = build_detection_test_loader(cfg, "iter_data", mapper=lambda x: x)
+        next(iter(dl))
+
     def _check_is_range(self, data_loader, N):
         # check that data_loader produces range(N)
         data = list(iter(data_loader))
@@ -114,8 +148,15 @@ class TestDataLoader(unittest.TestCase):
         N = 50
         ds = DatasetFromList(list(range(N)))
         sampler = InferenceSampler(len(ds))
+        # test that parallel loader works correctly
         dl = build_detection_test_loader(
             dataset=ds, sampler=sampler, mapper=lambda x: x, num_workers=3
+        )
+        self._check_is_range(dl, N)
+
+        # test that batch_size works correctly
+        dl = build_detection_test_loader(
+            dataset=ds, sampler=sampler, mapper=lambda x: x, batch_size=4, num_workers=0
         )
         self._check_is_range(dl, N)
 
