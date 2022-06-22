@@ -151,7 +151,7 @@ else:
     # skip this when building locally
     intersphinx_timeout = 0.5
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.6", None),
+    "python": ("https://docs.python.org/3.7", None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "torch": ("https://pytorch.org/docs/master/", None),
 }
@@ -338,6 +338,10 @@ _PAPER_DATA = {
     "mvitv2": (
         "2112.01526",
         "MViTv2: Improved Multiscale Vision Transformers for Classification and Detection",
+    ),
+    "swin": (
+        "2103.14030",
+        "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
     ),
 }
 
