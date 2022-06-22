@@ -156,8 +156,8 @@ COCO_CATEGORIES = [
 # fmt: off
 COCO_PERSON_KEYPOINT_NAMES = (
     "nose",
-    "left_eye", "right_eye",
-    "left_ear", "right_ear",
+    # "left_eye", "right_eye",
+    # "left_ear", "right_ear",
     "left_shoulder", "right_shoulder",
     "left_elbow", "right_elbow",
     "left_wrist", "right_wrist",
@@ -169,8 +169,8 @@ COCO_PERSON_KEYPOINT_NAMES = (
 
 # Pairs of keypoints that should be exchanged under horizontal flipping
 COCO_PERSON_KEYPOINT_FLIP_MAP = (
-    ("left_eye", "right_eye"),
-    ("left_ear", "right_ear"),
+    # ("left_eye", "right_eye"),
+    # ("left_ear", "right_ear"),
     ("left_shoulder", "right_shoulder"),
     ("left_elbow", "right_elbow"),
     ("left_wrist", "right_wrist"),
@@ -182,10 +182,10 @@ COCO_PERSON_KEYPOINT_FLIP_MAP = (
 # rules for pairs of keypoints to draw a line between, and the line color to use.
 KEYPOINT_CONNECTION_RULES = [
     # face
-    ("left_ear", "left_eye", (102, 204, 255)),
-    ("right_ear", "right_eye", (51, 153, 255)),
-    ("left_eye", "nose", (102, 0, 204)),
-    ("nose", "right_eye", (51, 102, 255)),
+    # ("left_ear", "left_eye", (102, 204, 255)),
+    # ("right_ear", "right_eye", (51, 153, 255)),
+    # ("left_eye", "nose", (102, 0, 204)),
+    # ("nose", "right_eye", (51, 102, 255)),
     # upper-body
     ("left_shoulder", "right_shoulder", (255, 128, 0)),
     ("left_shoulder", "left_elbow", (153, 255, 204)),
